@@ -1,0 +1,14 @@
+CFLAGS= -std=c99
+LEX=flex
+YACC=bison
+YFLAGS= -d
+
+para: tokens.o para.o
+
+tokens.o: tokens.c para.c
+
+tokens.c: tokens.l
+	flex -otokens.c tokens.l
+
+para.c: para.y
+	bison -d para.y -o para.c

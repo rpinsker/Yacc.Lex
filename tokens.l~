@@ -1,0 +1,53 @@
+%{
+    // tokens.l
+    // tokenization description for para program
+
+#include <stdio.h>
+#include <string.h>
+#include "para.h"
+
+int yyparse();
+
+%}
+
+%option noyywrap
+
+element [[:upper:]][[:lower:]]{0,2}
+
+%%
+
+\(				{ 	return OPEN_PAREN; }
+\)				{	return CLOSE_PAREN; }
+
+{element}       {
+					element_ptr p = lookup_element(db,yytext);
+					if (p == NULL) {
+						return ERROR;
+					}
+					yylval.mass=p->mass;
+					return ELEMENT;
+                }
+
+[ \t]           {}
+
+[[:digit:]]+    {
+					yylval.count = atoi(yytext);
+					return NUMBER;
+                }
+
+.               {	return ERROR; }
+
+\n              {	return EOLN; }
+
+<<EOF>>         {	return EOFTOK; }
+
+%%
+
+void parse_string(char *s) {
+	char *str;
+	asprintf(&str,"%s\n",s);
+    YY_BUFFER_STATE bh = yy_scan_string(str);
+    yyparse();
+    yy_delete_buffer(bh);
+    free(str);
+}
